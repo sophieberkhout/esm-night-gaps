@@ -1,0 +1,6 @@
+data groot/data
+.Rhistory
+modelout/
+simulation/data
+data groot/
+simulation/simulation_settings.RData
