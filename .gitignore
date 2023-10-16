@@ -4,3 +4,4 @@ modelout/
 simulation/data
 data groot/
 simulation/simulation_settings.RData
+modelout_informative/

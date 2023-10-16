@@ -1,7 +1,7 @@
 source("simulation/utils.R")
 
 # set up parallelization
-n_threads <- 3
+n_threads <- 25
 clus <- parallel::makeCluster(n_threads)
 evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
 
@@ -9,8 +9,8 @@ evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
 t_total <- numeric()
 
 # number of replications
-reps <- 10
-days <- c(20, 50, 100)
+reps <- 1000
+days <- c(25, 50, 100, 200)
 beeps <- 10
 burnin <- 50
 
@@ -22,7 +22,7 @@ resvar_i <- 1
 save(reps, days, beeps, mu, phi, delta, resvar_i,
      file = "simulation/simulation_settings.RData")
 
-set.seed(2023)
+set.seed(1844)
 for (days_i in days) {
   for (delta_i in delta) {
     # set parameter values

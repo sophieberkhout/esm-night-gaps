@@ -1,5 +1,5 @@
 # set up parallelization
-n_threads <- 3
+n_threads <- 25
 clus <- parallel::makeCluster(n_threads)
 evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
 
@@ -18,7 +18,7 @@ for (days_i in days) {
     
     modelout <- sprintf("simulation/stan/modelout/fit_days_%s_delta_%s",
                         days_i, delta_i)
-    
+
     # read results
     res <- parallel::parLapplyLB(cl = clus, 1:reps,
                                  readStanResults,
@@ -31,17 +31,25 @@ for (days_i in days) {
   }
 }
 
+parallel::stopCluster(clus)
+
+
 library(ggplot2)
 
-ggplot(df_diagnostics[df_diagnostics$parameter == "delta", ]) +
+p <- ggplot(df_diagnostics[df_diagnostics$parameter == "delta", ]) +
   geom_hline(yintercept = 0.8) +
-  ylim(c(0, 1)) +
-  geom_line(aes(x = delta, y = power, colour = as.factor(days)))
+  geom_line(aes(x = delta, y = power, colour = as.factor(days))) +
+  labs(x = expression(Delta), y = "Power", colour = "Days") +
+  theme_classic() +
+  scale_x_continuous(limits = c(-0.3, 0.3), breaks = delta) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+  viridis::scale_colour_viridis(discrete = TRUE)
+ggsave("simulation/power_delta.png")
 
 ggplot(df_diagnostics[df_diagnostics$parameter == "delta_2", ]) +
   geom_hline(yintercept = 0.8) +
   ylim(c(0, 1)) +
-  geom_line(aes(x = delta, y = power, colour = as.factor(days)))
+  geom_line(aes(x = true, y = power, colour = as.factor(days)))
 
 ggplot(df_diagnostics[df_diagnostics$parameter == "phi", ]) +
   geom_hline(yintercept = 0.8) +

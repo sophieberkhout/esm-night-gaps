@@ -1,11 +1,11 @@
-# compile stan model
-mod <- stan_model("simulation/stan/ar_beep_night.stan")
-
 # set up parallelization
-n_threads <- 3
+n_threads <- 25
 clus <- parallel::makeCluster(n_threads)
 evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
 exp <- parallel::clusterExport(clus, "mod")
+
+# compile stan model
+mod <- rstan::stan_model("simulation/stan/ar_beep_night.stan")
 
 # track duration
 t_total <- numeric()
@@ -22,11 +22,11 @@ for (days_i in days) {
     # where to save results
     modelout <- sprintf("simulation/stan/modelout/fit_days_%s_delta_%s",
                         days_i, delta_i)
-    
+
     # fit model
     t_fit <- system.time(
       parallel::parLapplyLB(cl = clus, 1:reps, fitModel,
-                            mod, modelout, stan_dat, seed = 2023)
+                            mod, modelout, stan_dat, seed = 1844)
     )
     
     t_total <- c(t_total, t_fit["elapsed"])
