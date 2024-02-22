@@ -1,7 +1,7 @@
-data groot/data
 .Rhistory
-modelout/
-simulation/data
-data groot/
+simulation/stan/modelout/
+simulation/data/
+data groot/data/
 simulation/simulation_settings.RData
-modelout_informative/
+out/
+
