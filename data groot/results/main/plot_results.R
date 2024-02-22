@@ -17,7 +17,7 @@ ggsave("data groot/results/main/plots/estphigamma.pdf", p_phi_gamma,
 
 p_pmps <- plotPMPs(df_pmps)
 ggsave("data groot/results/main/plots/posterior_bar.pdf",
-       height = 4, width = 12)
+       p_pmps, height = 4, width = 12)
 
 p_prior_posterior <- plotPriorPosterior(df_posteriors, df_bayes_factors)
 ggsave("data groot/results/main/plots/bayesfactors.pdf", p_prior_posterior,

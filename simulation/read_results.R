@@ -40,7 +40,7 @@ for (days_i in days) {
 }
 )
 save(df_diagnostics, file = "simulation/stan/results/results_phi_0.3_iter_10000.Rdata")
-save(out, file = "simulation/stan/results/out_phi_0.3_iter_10000.Rdata")
+# save(out, file = "simulation/stan/results/out_phi_0.3_iter_10000.Rdata")
 
 parallel::stopCluster(clus)
 

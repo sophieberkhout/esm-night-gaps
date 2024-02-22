@@ -163,7 +163,7 @@ dfDensity <- function (posterior_density, prior = c(0, 0.5), res) {
   return(df_long)
 }
 
-getBF <- function (r, out, prior = c(0, 0.5), fit) {
+getBF <- function (r, out, prior = c(0, 0.5), fit, delta_t = 18) {
   out <- tryCatch({
     phi <- rstan::summary(out[[r]])$summary["phi", "50%"]
     
@@ -173,10 +173,10 @@ getBF <- function (r, out, prior = c(0, 0.5), fit) {
     post_dens_s <- logspline::dlogspline(0, fit[[r]])
     BF_sd <- post_dens_s / dnorm(0, prior[1], sqrt(prior[2]))
     
-    post_dens_c <- logspline::dlogspline(phi ^ 18, fit[[r]])
-    BF_cd <- post_dens_c / dnorm(phi ^ 18, prior[1], sqrt(prior[2]))
+    post_dens_c <- logspline::dlogspline(phi ^ delta_t, fit[[r]])
+    BF_cd <- post_dens_c / dnorm(phi ^ delta_t, prior[1], sqrt(prior[2]))
     
-    data.frame(phi = phi, phi_ct = phi ^ 18,
+    data.frame(phi = phi, phi_ct = phi ^ delta_t,
                BF_pd = BF_pd, BF_sd = BF_sd, BF_cd = BF_cd)
   }, error = function(e) return(NULL))
   
@@ -315,7 +315,7 @@ plotGammas <- function (df) {
   return(p)
 }
 
-plotScatterPhiGamma <- function (df) {
+plotScatterPhiGamma <- function (df, delta_t = 18) {
   df_phi <- subset(df, df$parameter == "phi")
   df_gamma <- subset(df, df$parameter == "gamma")
   
@@ -325,7 +325,7 @@ plotScatterPhiGamma <- function (df) {
   xBreaks <- pretty(df$phi)
   ctLine <- seq(-0.2, 0.8, 0.01)
   dfLine <- data.frame(x = ctLine,
-                       y_ct = ctLine ^ 18, y_zero = 0, y_phi = ctLine)
+                       y_ct = ctLine ^ delta_t, y_zero = 0, y_phi = ctLine)
   dfLineLong <- tidyr::pivot_longer(dfLine, cols = starts_with("y"),
                                     names_to = "model", values_to = "y")
 
@@ -338,7 +338,7 @@ plotScatterPhiGamma <- function (df) {
     viridis::scale_fill_viridis(discrete = TRUE, labels = facetLabels) +
     scale_shape_manual(values = 21:25, labels = facetLabels) +
     scale_linetype_manual(values = c("dotted", "dashed", "solid"),
-                          labels = expression(gamma == phi^18,
+                          labels = expression(gamma == phi^delta_t,
                                               gamma == phi,
                                               gamma == 0)) +
     theme_void() +
@@ -367,7 +367,7 @@ plotScatterPhiGamma <- function (df) {
   return(p)
 }
 
-plotPars <- function (df) {
+plotPars <- function (df, delta_t = 18) {
   p <- ggplot(df) +
     geom_hline(yintercept = 0, linewidth = 0.3) +
     geom_pointrange(aes(x = parameter, y = median, ymin = lower, ymax = upper,
@@ -378,7 +378,7 @@ plotPars <- function (df) {
                                   "", 0.5, "", "1.0")) +
     scale_x_discrete(labels = c(expression(gamma), expression(phi),
                                 expression(gamma - phi),
-                                expression(gamma - phi ^ 18))) +
+                                expression(gamma - phi ^ delta_t))) +
     viridis::scale_fill_viridis(discrete = T, labels = facetLabels) +
     scale_shape_manual(values = 21:25, labels = facetLabels) +
     facet_wrap(~ .id, ncol = 5) +
@@ -413,7 +413,7 @@ plotPars <- function (df) {
   return(p)
 }
 
-plotPriorPosterior <- function (df_posteriors, df_bayes_factors) {
+plotPriorPosterior <- function (df_posteriors, df_bayes_factors, delta_t = 18) {
   df_vline <- tidyr::pivot_longer(df_bayes_factors,
                                   cols = c("phi", "phi_ct", "zero"),
                                   values_to = "null")
@@ -424,7 +424,7 @@ plotPriorPosterior <- function (df_posteriors, df_bayes_factors) {
                linewidth = 1) +
     geom_line(aes(x = x, y = density, linetype = line), linewidth = 1) +
     viridis::scale_colour_viridis(discrete = TRUE, direction = -1,
-                                  labels = expression(phi, phi^18, 0)) +
+                                  labels = expression(phi, phi^delta_t, 0)) +
     scale_linetype_manual(values = c("solid", "dotted"),
                           labels = c("Posterior", "Prior")) +
     geom_area(aes(x = x, y = area), alpha = 0.2) +
