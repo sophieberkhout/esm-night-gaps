@@ -23,5 +23,5 @@ df_posteriors <- dfDensity(posterior_density, prior, res)
 df_bayes_factors <- dfBayesFactors(bfs)
 df_pmps <- dfPMPs(pmps)
 
-save(df_pars, df_posteriors, df_bayes_factors,
+save(df_pars, df_posteriors, df_bayes_factors, df_pmps,
      file = "data groot/results/prior narrow/objects.Rdata")
