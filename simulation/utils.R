@@ -229,7 +229,7 @@ diagnostics <- function (reps, res, out, pars) {
 }
 
 .nonZeroInterval <- function (r, res) {
-  out <- res[[r]]$lower < 0 & res[[r]]$upper < 0 | res[[r]]$lower > 0 & res[[r]]$upper > 0
+  out <- (res[[r]]$lower < 0 & res[[r]]$upper < 0) | (res[[r]]$lower > 0 & res[[r]]$upper > 0)
   return(out)
 }
 
