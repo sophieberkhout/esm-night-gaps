@@ -13,7 +13,7 @@ stanCode <- function (gamma = c(0, 100)) {
     delta = gamma - phi;
     delta_2 = gamma - phi ^ 18;
     "
-    
+
   }
   sprintf("
   data {
@@ -66,16 +66,17 @@ stanCode <- function (gamma = c(0, 100)) {
     target += normal_lpdf(y[d1] | mu + %3$s * (y[d1_lag] - mu), sqrt(resvar_1));
   }
   generated quantities {
+    vector[N] log_lik_first;
     vector[N - 1] log_lik;
     
     %4$s
 
-    for (n in d1) log_lik[n - 1] = normal_lpdf(y[n] | mu + %3$s * (y[n - 1] - mu), sqrt(resvar_1));
-    for (n in db) log_lik[n - 1] = normal_lpdf(y[n] | mu + phi * (y[n - 1] - mu), sqrt(resvar_i));
+    for (n in d1) log_lik_first[n] = normal_lpdf(y[n] | mu + %3$s * (y[n - 1] - mu), sqrt(resvar_1));
+    for (n in db) log_lik_first[n] = normal_lpdf(y[n] | mu + phi * (y[n - 1] - mu), sqrt(resvar_i));
+    log_lik = log_like_first[2:N];
   }
   ", par, prior, eq, delta)
 }
-
 
 code_gamma <- stanCode()
 code_zero <- stanCode(NULL)
@@ -93,18 +94,10 @@ for (i in 1:nrow(dat)) {
 db <- which(d1 != 1)
 d1 <- which(d1)[-1]
 
-# db <- which(d1 != 1 & !is.na(y) & !is.na(c(NA, y[1:(length(y) - 1)])))
-# d1 <- which(d1 & !is.na(y) & !is.na(c(NA, y[1:(length(y) - 1)])))
-
 y <- dat[, "mood_doubt"]
 ii_mis <- which(is.na(y))
 ii_obs <- which(!is.na(y))
 y_obs <- y[ii_obs]
-
-# stan_dat <- list(
-#   N = N, D = length(d1), B = length(db), y = dat$y,
-#   d1 = d1, db = db
-# )
 
 dat_stan <- list(
   N = nrow(dat), D = length(d1), B = length(db),
@@ -114,27 +107,13 @@ dat_stan <- list(
 )
 
 out_gamma <- sampling(mod_gamma, data = dat_stan, seed = 1,
-                      iter = 5000, warmup = 1000, cores = 4)
+                      iter = 5000, warmup = 1000)
 out_zero <- sampling(mod_zero, data = dat_stan, seed = 1,
-                     iter = 5000, warmup = 1000, cores = 4)
+                     iter = 5000, warmup = 1000)
 
 library(bridgesampling) 
-#-898.0731
-H_gamma <- bridge_sampler(out_gamma, maxiter = 5000)
-H_zero <- bridge_sampler(out_zero, maxiter = 5000)
 
-library(loo)
-loo_gamma <- loo(out_gamma)
-test <- loo::extract_log_lik(out_gamma)
-test_obs <- test[, c(db - 1, d1 - 1)]
-test2 <- loo::extract_log_lik(out_zero)
-test_obs2 <- test2[, c(db - 1, d1 - 1)]
-loo::waic(test)
-loo::kfold(out_gamma, K = 10)
+H_gamma <- bridge_sampler(out_gamma)
+H_zero <- bridge_sampler(out_zero)
 
-loo::waic(test_obs)
-loo::waic(test_obs2)
-loo_gamma <- loo::loo(test_obs)
-loo_zero <- loo::loo(test_obs2)
-loo::loo_compare(loo_gamma, loo_zero)
-loo::loo_model_weights(list(loo_gamma, loo_zero), method = "pseudobma")
+error_measures(H_gamma)$percentage
