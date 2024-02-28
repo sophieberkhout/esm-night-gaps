@@ -1,4 +1,4 @@
-source("data groot/utils.R")
+source("data groot/results/functions_results.R")
 load("data groot/results/prior narrow/objects.Rdata")
 
 library(ggplot2)

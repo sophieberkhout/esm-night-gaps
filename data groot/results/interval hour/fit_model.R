@@ -1,4 +1,4 @@
-source("data groot/utils.R")
+source("data groot/results/functions_results.R")
 
 dat <- read.csv("data groot/data/data_60min.csv")
 

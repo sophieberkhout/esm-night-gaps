@@ -220,34 +220,6 @@ dfBayesFactors <- function (bfs) {
   return(df_long)
 }
 
-prettyNames <- function (idx = 1:29) {
-  names <- c("relaxed", "down", "irritated", "satisfied", "lonely", "anxious",
-             "enthusiastic", "suspicious", "cheerful", "guilty", "indecisive",
-             "strong", "restless", "agitated", "worry", "concentrate well",
-             "like myself", "ashamed", "doubt myself", "handle anything", 
-             "hungry", "tired", "in pain", "dizzy", "dry mouth", "nauseous",
-             "headache", "sleepy", "physically active")
-  return(names[idx])
-}
-
-itemCategory <- function (idx = 1:29) {
-  names <- c("PA", "NA", "NA", "PA", "NA", "NA",
-             "PA", "NA", "PA", "NA", "NA",
-             "PA", "unrest", "unrest", "unrest", "unrest",
-             "self-esteem", "self-esteem", "self-esteem", "self-esteem",
-             "physical", "physical", "physical", "physical", "physical",
-             "physical", "physical", "physical", "physical")
-  return(names[idx])
-}
-
-facetLabels <- c(
-  `NA` = "Negative Affect",
-  `PA` = "Positive Affect",
-  `unrest` = "Mental Unrest",
-  `self-esteem` = "Self-Esteem",
-  `physical` = "Physical"
-)
-
 dfPars <- function (res) {
   df_long <- data.table::rbindlist(res, idcol = TRUE)
   
@@ -261,6 +233,36 @@ dfPars <- function (res) {
   
   return(df_pars)
 }
+postModelProb <- function (BFpd, BFsd, BFcd) {
+  # pause, stop, continue, different
+  BFsp <- BFsd / BFpd
+  BFcp <- BFcd / BFpd
+  pD <- (1 / BFpd) * 0.25 / (0.25 + BFsp * 0.25 + BFcp * 0.25 + (1 / BFpd) * 0.25)
+  pS <- BFsd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
+  pP <- BFpd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
+  pC <- BFcd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
+  
+  df <- data.frame(pause = pP, stop = pS, continue = pC, different = pD)
+  return(df)
+}
+
+calcPostModProbs <- function (r, bfs) {
+  postModelProb(bfs[[r]]$BF_pd, bfs[[r]]$BF_sd, bfs[[r]]$BF_cd)
+}
+
+dfPMPs <- function (df) {
+  df <- data.table::rbindlist(df)
+  df$item <- prettyNames()
+  df$category <- itemCategory()
+  
+  df_long <- tidyr::pivot_longer(df, cols = c("pause", "stop",
+                                              "continue", "different"))
+  df_long$name <- factor(df_long$name)
+  
+  return(df_long)
+}
+
+# results plots
 
 plotGammas <- function (df) {
   df <- subset(df, parameter == "gamma")
@@ -328,7 +330,7 @@ plotScatterPhiGamma <- function (df, delta_t = 18) {
                        y_ct = ctLine ^ delta_t, y_zero = 0, y_phi = ctLine)
   dfLineLong <- tidyr::pivot_longer(dfLine, cols = starts_with("y"),
                                     names_to = "model", values_to = "y")
-
+  
   p <- ggplot(df) +
     geom_line(data = dfLineLong, aes(x = x, y = y, linetype = model)) +
     geom_point(aes(x = phi, y = gamma, fill = category, shape = category),
@@ -463,35 +465,6 @@ plotPriorPosterior <- function (df_posteriors, df_bayes_factors, delta_t = 18) {
     guides(colour = guide_legend(order = 2), linetype = guide_legend(order = 1))
   
   return(p)
-}
-
-postModelProb <- function (BFpd, BFsd, BFcd) {
-  # pause, stop, continue, different
-  BFsp <- BFsd / BFpd
-  BFcp <- BFcd / BFpd
-  pD <- (1 / BFpd) * 0.25 / (0.25 + BFsp * 0.25 + BFcp * 0.25 + (1 / BFpd) * 0.25)
-  pS <- BFsd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
-  pP <- BFpd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
-  pC <- BFcd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
-  
-  df <- data.frame(pause = pP, stop = pS, continue = pC, different = pD)
-  return(df)
-}
-
-calcPostModProbs <- function (r, bfs) {
-  postModelProb(bfs[[r]]$BF_pd, bfs[[r]]$BF_sd, bfs[[r]]$BF_cd)
-}
-
-dfPMPs <- function (df) {
-  df <- data.table::rbindlist(df)
-  df$item <- prettyNames()
-  df$category <- itemCategory()
-  
-  df_long <- tidyr::pivot_longer(df, cols = c("pause", "stop",
-                                              "continue", "different"))
-  df_long$name <- factor(df_long$name)
-  
-  return(df_long)
 }
 
 plotPMPs <- function (df) {

@@ -1,4 +1,4 @@
-source("data groot/utils.R")
+source("data groot/results/functions_results.R")
 load("data groot/results/interval hour/objects.Rdata")
 
 library(ggplot2)
