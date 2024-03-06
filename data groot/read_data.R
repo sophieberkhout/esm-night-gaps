@@ -17,8 +17,10 @@ dat_30 <- correctInterval(dat, min_int = 30,
                        as_first = "08:15:00", as_last = "21:45:00")
 dat_60 <- correctInterval(dat, min_int = 60,
                        as_first = "08:15:00", as_last = "21:45:00")
+dat_90 <- correctInterval(dat, min_int = 90,
+                          as_first = "08:15:00", as_last = "21:45:00")
 
-# add missing beep numbers for uncorrected data
+# add missing beep numbers for uncorrected data (leads to 1410 obs)
 dat_uncorrected <- dat_post[, grepl("datetime|beepno|mood_|pat_|phy_|se_",
                                     names(dat_post))]
 dat_uncorrected$date <- as.Date(dat_uncorrected$datetime)
@@ -32,5 +34,6 @@ dat_uncorrected$day <- rep(1:length(dates), each = 10)
 # save data
 write.csv(dat_30, row.names = FALSE, file = "data groot/data/data.csv")
 write.csv(dat_60, row.names = FALSE, file = "data groot/data/data_60min.csv")
+write.csv(dat_90, row.names = FALSE, file = "data groot/data/data_90min.csv")
 write.csv(dat_uncorrected, row.names = FALSE,
           file = "data groot/data/data_uncorrected.csv")

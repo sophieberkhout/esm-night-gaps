@@ -13,7 +13,7 @@ correctInterval <- function(dat, min_int,
   n_min_int <- round(dt / min_int) - 1
   n_min_int[n_min_int < 0 ]   <- 0 # cannot be lower than zero
 
-  # difference in time divided by number of intervals (+1)
+  # difference in time divided by number of intervals (+ 1)
   dt_min_int <- round(dt / (n_min_int + 1))
 
   # combine new stamps with existing stamps
