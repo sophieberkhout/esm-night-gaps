@@ -16,7 +16,7 @@ names(res) <- prettyNames()
 
 logSpline <- lapply(1:length(items), fitLogSpline, out)
 posterior_density <- lapply(1:length(items), getDensity, logSpline)
-bfs  <- lapply(1:length(items), getBF, out, prior, logSpline, delta_t = 9)
+bfs  <- lapply(1:length(items), getBF, out, prior, logSpline, delta_t = 7)
 pmps <- lapply(1:length(items), calcPostModProbs, bfs)
 
 df_pars <- dfPars(res)

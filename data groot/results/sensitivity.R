@@ -29,7 +29,7 @@
 # test <- .getDFs("data groot/results/interval hour/objects.Rdata", "hour")
 
 set_interval <- c("main", "prior narrow", "prior wide", "prior nonzero",
-                  "interval hour", "interval uncorrected")
+                  "interval hour", "interval hour and half")
 
 fileNames <- sprintf("data groot/results/%s/objects.Rdata", set)
 

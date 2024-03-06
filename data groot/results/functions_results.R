@@ -233,6 +233,7 @@ dfPars <- function (res) {
   
   return(df_pars)
 }
+
 postModelProb <- function (BFpd, BFsd, BFcd) {
   # pause, stop, continue, different
   BFsp <- BFsd / BFpd
@@ -261,6 +262,34 @@ dfPMPs <- function (df) {
   
   return(df_long)
 }
+
+prettyNames <- function (idx = 1:29) {
+  names <- c("relaxed", "down", "irritated", "satisfied", "lonely", "anxious",
+             "enthusiastic", "suspicious", "cheerful", "guilty", "indecisive",
+             "strong", "restless", "agitated", "worry", "concentrate well",
+             "like myself", "ashamed", "doubt myself", "handle anything", 
+             "hungry", "tired", "in pain", "dizzy", "dry mouth", "nauseous",
+             "headache", "sleepy", "physically active")
+  return(names[idx])
+}
+
+itemCategory <- function (idx = 1:29) {
+  names <- c("PA", "NA", "NA", "PA", "NA", "NA",
+             "PA", "NA", "PA", "NA", "NA",
+             "PA", "unrest", "unrest", "unrest", "unrest",
+             "self-esteem", "self-esteem", "self-esteem", "self-esteem",
+             "physical", "physical", "physical", "physical", "physical",
+             "physical", "physical", "physical", "physical")
+  return(names[idx])
+}
+
+facetLabels <- c(
+  `NA` = "Negative Affect",
+  `PA` = "Positive Affect",
+  `unrest` = "Mental Unrest",
+  `self-esteem` = "Self-Esteem",
+  `physical` = "Physical"
+)
 
 # results plots
 

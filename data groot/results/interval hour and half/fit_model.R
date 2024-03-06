@@ -12,7 +12,7 @@ stan_code <- getStanCode(prior_gamma = "normal(0, sqrt(0.5))")
 mod <- rstan::stan_model(model_code = stan_code)
 
 dat_stan <-  parallel::parLapplyLB(cl = clus, 1:length(items),
-                                   stanData, dat, items, delta_t = 9)
+                                   stanData, dat, items, delta_t = 7)
 
 pars <- c("mu", "phi", "gamma", "sigma_2", "psi_2", "diff_phi", "diff_phi_ct")
 
