@@ -28,15 +28,15 @@ plotScatter(dat_unc, dat_c, items = items[grepl("phy_", items)], breaks = 1:7,
             filename = "data groot/plots/scatterplot_phy.pdf",
             width = 7, height = 16)
 
-plotScatter(dat_unc, dat_c, items = phy_items[-c(4, 5, 6)], breaks = 1:7,
-            names = phy_names[-c(4, 5, 6)],
-            filename = "data groot/plots/scatterplot_phy_good.pdf",
-            width = 7, height = 11)
+plotScatter(dat_unc, dat_c, items = phy_items[-c(6, 9, 8, 2)], breaks = 1:7,
+            names = phy_names[-c(6, 9, 8, 2)],
+            filename = "data groot/plots/scatterplot_phy_first.pdf",
+            width = 7, height = 9)
 
-plotScatter(dat_unc, dat_c, items = phy_items[c(4, 5, 6)], breaks = 1:7,
-            names = phy_names[c(4, 5, 6)],
-            filename = "data groot/plots/scatterplot_phy_bad.pdf",
-            width = 7, height = 6)
+plotScatter(dat_unc, dat_c, items = phy_items[c(6, 9, 8, 2)], breaks = 1:7,
+            names = phy_names[c(6, 9, 8, 2)],
+            filename = "data groot/plots/scatterplot_phy_second.pdf",
+            width = 7, height = 8)
 
 plotScatter(dat_unc, dat_c, items = items[c(1, 4, 7, 9, 12)], breaks = 1:7,
             names = prettyNames(c(1, 4, 7, 9, 12)),

@@ -15,9 +15,19 @@ plotTimeSeries(dat, items = items[grepl("pat_", items)],
                names = prettyNames(grepl("pat_", items)), y_breaks = 1:7,
                filename = "data groot/plots/timeseries_pat.pdf", 15, 8)
 
-plotTimeSeries(dat, items = items[grepl("phy_", items)],
-               names = prettyNames(grepl("phy_", items)), y_breaks = 1:7,
-               filename = "data groot/plots/timeseries_phy.pdf", 15, 15)
+phy_items <- items[grepl("phy_", items)]
+phy_names <- prettyNames(grepl("phy_", items))
+plotTimeSeries(dat, items = phy_items,
+               names = phy_names, y_breaks = 1:7,
+               filename = "data groot/plots/timeseries_phy.pdf", 15, 18)
+
+plotTimeSeries(dat, items = phy_items[-c(6, 9, 8, 2)],
+               names = phy_names[-c(6, 9, 8, 2)], y_breaks = 1:7,
+               filename = "data groot/plots/timeseries_phy_first.pdf", 15, 10)
+
+plotTimeSeries(dat, items = phy_items[c(6, 9, 8, 2)],
+               names = phy_names[c(6, 9, 8, 2)], y_breaks = 1:7,
+               filename = "data groot/plots/timeseries_phy_second.pdf", 15, 8)
 
 plotTimeSeries(dat, items = items[c(1, 4, 7, 9, 12)],
                names = prettyNames(c(1, 4, 7, 9, 12)), y_breaks = 1:7,

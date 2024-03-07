@@ -35,8 +35,11 @@ plotTimeSeries <- function(dat, items, names, y_breaks,
   
   dat_long <- tidyr::pivot_longer(dat_plot, 3:ncol(dat_plot))
   
-  dat_long$name <- factor(dat_long$name, levels = items)
-  levels(dat_long$name) <- names
+  # alphabetical order
+  orderItems <- order(names)
+  dat_long$name <- factor(dat_long$name, levels = items[orderItems],
+                          labels = names[orderItems])
+  # levels(dat_long$name) <- names
   
   dat_long$date <- as.POSIXct(dat_long$date, tz = "UTC")
   dat_long$datetime <- as.POSIXct(dat_long$datetime, tz = "UTC")
@@ -182,9 +185,10 @@ plotScatter <- function(dat_unc, dat_c, items, names, breaks,
                     "Day Only", "Night Only")
   df$g <- factor(df$g, levels = c("Unequal Intervals", "Corrected Intervals",
                                   "Day Only",  "Night Only"))
-  df$name <- factor(df$name, levels = items)
   
-  levels(df$name) <- names
+  orderItems <- order(names)
+  df$name <- factor(df$name, levels = items[orderItems],
+                    labels = names[orderItems])
   
   tick_labels <- breaks
   y_lim <- c(min(breaks) - 0.25, max(breaks) + 0.25)
@@ -208,7 +212,7 @@ plotScatter <- function(dat_unc, dat_c, items, names, breaks,
           axis.ticks = element_line(),
           axis.ticks.length = unit(2.5, "pt"),
           strip.text = element_text(margin = margin(5, 5, 5, 5), size = 12),
-          strip.text.y = element_text(angle = 90),
+          strip.text.y = element_text(angle = 270, size = 12),
           panel.spacing = unit(7.5, units = "pt"),
           plot.margin = margin(0, 5, 0, 0),
           legend.position = "top") +

@@ -436,10 +436,8 @@ plotPars <- function (df, delta_t = 18) {
     ) +
     geom_segment(x = -Inf, xend = -Inf, y = -1, yend = 1,
                  linewidth = 0.3, lineend = "square") +
-    geom_segment(y = -Inf, yend = -Inf, x = 1,
-                 xend = 4,
-                 linewidth = 0.3,
-                 lineend = "square")
+    geom_segment(y = -Inf, yend = -Inf, x = 1, xend = 4,
+                 linewidth = 0.3, lineend = "square")
   
   return(p)
 }

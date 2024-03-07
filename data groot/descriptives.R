@@ -5,6 +5,9 @@ dat <- dat_post[, grepl("dayno|mood_|pat_|phy_|se_", names(dat_post))]
 
 colSums(is.na(dat))
 
+varItems <- apply(dat, 2, var, use = "complete.obs")
+varItems[varItems < 0.1]
+
 dat <- read.csv("data groot/data/data_uncorrected.csv")
 datetime <- as.POSIXct(dat$datetime, tz = "UTC")  # stamp to date
 timeonly <- format(datetime, "%H:%M:%S")
