@@ -15,12 +15,12 @@ beeps <- 10
 burnin <- 50
 
 mu <- 4
-phi <- 0.3
-diff <- seq(-3, 3, 1) / 10
+phi <- 0.5
+diff <- seq(-5, 1, 1) / 10
 sigma_2 <- 1
 
 save(reps, days, beeps, mu, phi, diff, sigma_2,
-     file = "simulation/simulation_settings_phi_0.3.RData")
+     file = "simulation/phi 0.5/simulation_settings_phi_0.5.RData")
 
 set.seed(1844)
 for (days_i in days) {
@@ -34,7 +34,7 @@ for (days_i in days) {
       parallel::parLapplyLB(cl = clus, 1:reps,
                             simulateData,
                             D = days_i, B = beeps, burnin = burnin, pars = pars,
-                            file = "simulation/data/phi0.3/")
+                            file = "simulation/data/phi0.5/")
     )
     
     t_total <- c(t_total, t_fit["elapsed"])

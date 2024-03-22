@@ -5,8 +5,8 @@ simulateData <- function (r, D, B, burnin, pars, file) {
     
     # create innovation matrix, with the different residual variances
     e <- y
-    e[, 1] <- rnorm(D + burnin, 0, sqrt(pars$resvar_1))
-    e[, 2:B] <- rnorm((D + burnin) * (B - 1), 0, sqrt(pars$resvar_i))
+    e[, 1] <- rnorm(D + burnin, 0, sqrt(pars$psi_2))
+    e[, 2:B] <- rnorm((D + burnin) * (B - 1), 0, sqrt(pars$sigma_2))
     
     # simulate data
     for(i in 2:(D + burnin)) {
@@ -66,7 +66,7 @@ getPars <- function (mu, phi, diff, sigma_2) {
 fitModel <- function (r, mod, modelout = "stan/modelout/", dat, seed, iter, warmup) {
   out <- tryCatch({
     rstan::sampling(mod, data = dat[[r]], seed = seed,
-                    iter = iter, warmup = warmup)
+                    iter = iter, warmup = warmup, save_warmup = FALSE)
   }, error = function(e) e)
   
   saveRDS(
