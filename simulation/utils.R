@@ -285,9 +285,7 @@ minBF <- function(r, bfs, min) {
 
 postModelProb <- function (BFpd, BFsd, BFcd) {
   # pause, stop, continue, different
-  BFsp <- BFsd / BFpd
-  BFcp <- BFcd / BFpd
-  pD <- (1 / BFpd) * 0.25 / (0.25 + BFsp * 0.25 + BFcp * 0.25 + (1 / BFpd) * 0.25)
+  pD <- 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pS <- BFsd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pP <- BFpd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pC <- BFcd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)

@@ -94,6 +94,64 @@ ggplot(df_diagnostics[df_diagnostics$parameter == c("phi", "mu", "sigma_2", 'psi
   # scale_x_continuous(limits = c(0.0, 0.6), breaks = seq(0, 0.6, 0.1)) +
   # scale_y_continuous(limits = c(0, 0.3), breaks = seq(0, 1, 0.2))
 
+################################# bias estimates
+df_long_estimates <- tidyr::pivot_longer(df_diagnostics,
+                                         cols = c("bias", "absolute_bias", "coverage"),
+                                         names_to = "diagnostic", values_to = "value")
+df_long_estimates$days <- factor(df_long_estimates$days)
+df_long_estimates$diagnostic <- factor(df_long_estimates$diagnostic,
+                                       levels = c("bias", "absolute_bias", "coverage"),
+                                       labels = c("Bias", "MAE", "Coverage"))
+df_long_estimates$parameter <- factor(df_long_estimates$parameter,
+                                      levels = c("gamma", "phi", "diff", "diff_ct", "mu", "sigma_2", "psi_2"),
+                                      labels = expression(gamma, phi, gamma - phi, gamma - phi ^ 7, mu, sigma ^ 2, psi ^ 2))
+
+df_long_estimates$diff <- factor(df_long_estimates$diff, labels = seq(0, 0.6, 0.1))
+
+df_axis <- data.frame(diagnostic = unique(df_long_estimates$diagnostic),
+                      ymin = c(-0.04, 0, .9), ymax = c(0.04, 0.25, 1),
+                      hline = c(0, 0, 1))
+
+yBreaks <- function(x) {
+  if (max(x) < 0.2) seq(-0.04, 0.04, 0.02)
+  else if(max(x) > 0.9) seq(0.9, 1, 0.02) else seq(0, 0.25, 0.05)
+}
+
+ggplot(df_long_estimates) +
+  geom_hline(data = df_axis, aes(yintercept = hline), linewidth = 0.3) +
+  geom_line(aes(x = days, y = value, group = diff, colour = diff), linewidth = 0.75) +
+  viridis::scale_colour_viridis(discrete = TRUE) +
+  labs(colour = expression(gamma)) +
+  facet_grid(rows = vars(diagnostic), cols = vars(parameter), scales = "free",
+             labeller = label_parsed) +
+  scale_y_continuous(breaks = yBreaks) +
+  theme_void() +
+  guides(colour = guide_legend(nrow = 1)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 0.95, size = 11,
+                                   margin = margin(0, 0, -5, 0)),
+        legend.position = "bottom",
+        # legend.title = element_blank(),
+        axis.title = element_blank(),
+        text = element_text(family = "sans", size = 12),
+        # axis.title.y = element_text(angle = 90),
+        axis.text = element_text(margin = margin(5, 5, 5, 5)),
+        axis.text.y = element_text(hjust = 0.95),
+        axis.ticks = element_line(lineend = "butt",
+                                  linewidth = 0.3),
+        axis.ticks.length = unit(2.5, "pt"),
+        strip.text = element_text(margin = margin(0, 5, 0, 5), size = 14),
+        strip.text.y = element_text(angle = 270),
+        panel.spacing = unit(7.5, units = "pt"),
+        plot.margin = margin(0, 5, 0, 0)) +
+  geom_segment(data = df_axis,
+               aes(x = -Inf, xend = -Inf, y = ymin, yend = ymax),
+               linewidth = 0.3, lineend = "square") +
+  geom_segment(x = 1, xend = 4, y = -Inf, yend = -Inf,
+               linewidth = 0.3, lineend = "square")
+
+ggsave("simulation/simulation_estimates.pdf", width = 9, height = 4)
+
+
 ################################################################################
 ## PLOT GAMMA SIMULATION
 
@@ -380,9 +438,9 @@ df_plot <- df_diagnostics[df_diagnostics$parameter %in% c("gamma", "diff", "diff
 df_bar <- df_plot[, c("parameter", "pref_model", "days", "diff")]
 
 for (i in days) {
-  for (j in diff) {
+  for (j in unique(df_bar$diff)) {
     pref <- 1 - sum(subset(df_bar, df_bar$days == i & df_bar$diff == j, "pref_model"))
-  df_bar[nrow(df_bar) + 1, ] <- data.frame("other", pref, i, j)
+    df_bar[nrow(df_bar) + 1, ] <- data.frame("other", pref, i, j)
   }
 }
 
@@ -436,15 +494,15 @@ df_both <- rbind(df_diagnostics, df_diagnostics_0.5)
 df_plot <- df_both[df_both$parameter %in% c("gamma", "diff", "diff_ct"), ]
 # df_plot$estimate <- factor(df_plot$parameter, levels = c("gamma - phi", "gamma - phi ^ 7", "gamma"))
 # labelPars <- c("gamma - phi", "gamma - phi ^ 7", "gamma")
-labelPars <- as_labeller(c(gamma = "gamma", diff = "gamma - phi", diff_ct = "gamma - phi ^ 7",
+labelPars <- as_labeller(c(gamma = "BF[sd]", diff = "BF[pd]", diff_ct = "BF[cd]",
                            `0.3` = "phi == 0.3", `0.5` = "phi == 0.5"), label_parsed)
 df_plot$parameter <- factor(df_plot$parameter, levels = c("diff", "gamma", "diff_ct"))
 
-xBreaks <- function(x) {
-  if (max(x) > 0.4) seq(0, 0.6, 0.1) else seq(-5, 3, 1) / 10
-}
-df_axis <- data.frame(parameter = unique(df_plot$parameter),
-                      xmin = c(0, -0.5, 0), xmax = c(0.6, 0.3, 0.6))
+# xBreaks <- function(x) {
+#   if (max(x) > 0.4) seq(0, 0.6, 0.1) else seq(-5, 3, 1) / 10
+# }
+# df_axis <- data.frame(parameter = unique(df_plot$parameter),
+#                       xmin = c(0, -0.5, 0), xmax = c(0.6, 0.3, 0.6))
 
 df_plot$days <- factor(df_plot$days, levels = c(200, 100, 50, 25))
 ggplot(df_plot) +
@@ -452,39 +510,41 @@ ggplot(df_plot) +
   # facet_wrap(~ parameter, scales = "free", strip.position = "bottom", labeller = labelPars) + 
   geom_hline(yintercept = 0.8, linewidth = 0.3) +
   # geom_line(aes(x = true, y = power, colour = as.factor(days))) +
-  geom_line(aes(x = true, y = power_bf_3, colour = days), linewidth = 1) +
-  geom_point(aes(x = true, y = power_bf_3, colour = days, shape = days), size = 2, stroke = 1.5, fill = "white") +
+  geom_line(aes(x = diff + phi, y = power_bf_3, colour = days), linewidth = 1) +
+  geom_point(aes(x = diff + phi, y = power_bf_3, colour = days), size = 2, stroke = 1.5, fill = "white", shape = 21) +
   # geom_line(aes(x = true, y = power_bf_5, colour = as.factor(days)), linetype = "dashed", linewidth = 1) +
   # geom_line(aes(x = true, y = power_bf_10, colour = as.factor(days)), linetype = "dotted", linewidth = 1) +
-  labs(x = "True", y = "Power", colour = "Days") +
-  scale_x_continuous(breaks = xBreaks) +
+  labs(x = expression(gamma), y = "Power", colour = "Days") +
+  scale_x_continuous(breaks = seq(0, 0.6, 0.1)) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-  scale_shape_manual(values = 21:24, labels = c(200, 100, 50, 25), name = "legend") +
-  viridis::scale_colour_viridis(discrete = TRUE, labels = c(200, 100, 50, 25), name = "legend") +
+  # scale_shape_manual(values = 21:24, labels = c(200, 100, 50, 25), name = "legend") +
+  viridis::scale_colour_viridis(discrete = TRUE, labels = c(200, 100, 50, 25)) +
   theme_void() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1, size = 12),
-        legend.position = "bottom",
-        legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        legend.text = element_text(size = 12),
-        text = element_text(family = "sans", size = 12),
-        # axis.title.y = element_text(angle = 90),
-        axis.text = element_text(margin = margin(5, 5, 0, 5)),
-        axis.text.y = element_text(hjust = 0.95),
-        axis.title = element_text(margin = margin(5, 5, 5, 5)),
-        axis.title.y = element_text(angle = 90, size = 12),
-        axis.ticks = element_line(lineend = "butt",
-                                  linewidth = 0.3),
-        axis.ticks.length = unit(2.5, "pt"),
-        strip.text = element_text(margin = margin(0, 5, 2, 5), size = 12),
-        strip.placement = "outside",
-        strip.text.y = element_text(angle = 270),
-        panel.spacing = unit(7.5, units = "pt"),
-        plot.margin = margin(5, 5, 0, 0)) +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1, size = 12),
+    legend.position = "bottom",
+    # legend.title = element_blank(),
+    # axis.title.x = element_blank(),
+    legend.text = element_text(size = 12),
+    text = element_text(family = "sans", size = 12),
+    # axis.title.y = element_text(angle = 90),
+    axis.text = element_text(margin = margin(5, 5, 0, 5)),
+    axis.text.y = element_text(hjust = 0.95),
+    axis.title = element_text(margin = margin(5, 5, 5, 5)),
+    axis.title.y = element_text(angle = 90, size = 14),
+    axis.ticks = element_line(lineend = "butt",
+                              linewidth = 0.3),
+    axis.ticks.length = unit(2.5, "pt"),
+    strip.text = element_text(margin = margin(0, 5, 2, 5), size = 14),
+    strip.placement = "outside",
+    strip.text.y = element_text(angle = 270),
+    panel.spacing = unit(7.5, units = "pt"),
+    plot.margin = margin(5, 5, 0, 0)
+  ) +
   geom_segment(x = -Inf, xend = -Inf, y = 0, yend = 1,
                linewidth = 0.3, lineend = "square") +
-  geom_segment(data = df_axis, y = -Inf, yend = -Inf,
-               aes(x = xmin, xend = xmax), linewidth = 0.3, lineend = "square") 
+  geom_segment(y = -Inf, yend = -Inf, x = 0, xend = 0.6,
+               linewidth = 0.3, lineend = "square")
 ggsave("simulation/power_both.pdf", width = 8, height = 4)
 
 
@@ -500,6 +560,8 @@ ggsave("simulation/power_both.pdf", width = 8, height = 4)
 #   }
 # }
 
+## get db_bar from PMP code above. This is so messy sorry future self
+
 df_bar_0.3 <- df_bar
 df_bar_0.3$label <- paste("gamma ==", df_bar_0.3$diff + 0.3)
 df_bar_0.5 <- df_bar
@@ -511,7 +573,7 @@ df_bar <- rbind(df_bar_0.3, df_bar_0.5)
 
 df_bar$days <- factor(df_bar$days)
 df_bar$model <- factor(df_bar$parameter, levels = c("gamma", "diff", "diff_ct", "other"),
-                       labels = c("pause", "stop", "continue", "different"))
+                       labels = c("pauses", "stops", "continues", "different"))
 # levels(df_bar$model) <-  c("pP", "pS", "pC", "pD")
 
 # dfLong$item2 <- factor(dfLong$item, levels = orderItems)

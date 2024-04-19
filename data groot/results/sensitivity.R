@@ -113,25 +113,27 @@ ggplot(pmps_interval) +
   facet_wrap(~ item, ncol = 5) +
   geom_bar(aes(x = set, y = value, fill = name), stat = "identity") +
   viridis::scale_fill_viridis(discrete = TRUE, name = "Method") +
+  labs(y = "Posterior Model Probabilities",
+       x = "Daytime interval length in minutes") +
   theme_void() +
   theme(
-    text = element_text(family = "sans", size = 14),
-    axis.title.y = element_text(angle = 90, size = 14),
-    legend.position = c(.9, .07),
+    text = element_text(family = "sans", size = 16),
+    axis.title.y = element_text(angle = 90),
+    axis.title.x = element_text(),
+    legend.position = c(.9, .065),
     legend.direction = "vertical",
-    legend.text = element_text(family = "sans", size = 14),
+    legend.text = element_text(family = "sans", size = 16),
     legend.box.margin = margin(-10, 0, 0, 0),
-    axis.text = element_text(margin = margin(5, 5, 5, 5)),
-    axis.text.y = element_text(hjust = 0.95),
+    # axis.text = element_text(margin = margin(5, 5, 5, 5)),
+    axis.text.y = element_text(margin = margin(5, 5, 5, 5), hjust = 0.95),
+    axis.text.x = element_text(margin = margin(0, 5, 5, 5)),
     axis.ticks.y = element_line(lineend = "butt",
                                 linewidth = 0.3),
     axis.ticks.length = unit(2.5, "pt"),
-    strip.text = element_text(margin = margin(5, 5, 5, 5), size = 14),
+    strip.text = element_text(margin = margin(5, 5, 5, 5), size = 16),
     panel.spacing = unit(7.5, units = "pt"),
     plot.margin = margin(5, 5, 5, 5)
-  ) +
-  labs(y = "Posterior Model Probabilities",
-       x = "Daytime interval length in minutes")
+)
 
 ggsave("data groot/results/sensitivity.pdf", width = 12, height = 12)
 
@@ -151,23 +153,24 @@ ggplot(pmps_prior) +
   viridis::scale_fill_viridis(discrete = TRUE, name = "Method") +
   theme_void() +
   theme(
-    text = element_text(family = "sans", size = 14),
-    axis.title.y = element_text(angle = 90, size = 14),
+    text = element_text(family = "sans", size = 16),
+    axis.title.y = element_text(angle = 90),
+    axis.title.x = element_text(margin = margin(-5, 5, 5, 5)),
     legend.position = c(.9, 0),
     legend.direction = "vertical",
-    legend.text = element_text(family = "sans", size = 14),
+    legend.text = element_text(family = "sans", size = 16),
     legend.box.margin = margin(-10, 0, 0, 0),
     axis.text = element_text(margin = margin(5, 5, 5, 5)),
     axis.text.y = element_text(hjust = 0.95),
-    axis.text.x = element_text(angle = 60, hjust = 1.1, vjust = 1.2),
+    axis.text.x = element_text(angle = 60, hjust = 1.1, vjust = 1.2, size = 14),
     axis.ticks.y = element_line(lineend = "butt",
                                 linewidth = 0.3),
     axis.ticks.length = unit(2.5, "pt"),
-    strip.text = element_text(margin = margin(5, 5, 5, 5), size = 14),
+    strip.text = element_text(margin = margin(5, 5, 5, 5), size = 16),
     panel.spacing = unit(7.5, units = "pt"),
     plot.margin = margin(5, 5, 5, 5)
   ) +
   labs(y = "Posterior Model Probabilities",
-       x = "Prior")
+       x = "Prior distribution")
 
 ggsave("data groot/results/sensitivity_prior.pdf", width = 12, height = 12)

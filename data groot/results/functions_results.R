@@ -236,9 +236,7 @@ dfPars <- function (res) {
 
 postModelProb <- function (BFpd, BFsd, BFcd) {
   # pause, stop, continue, different
-  BFsp <- BFsd / BFpd
-  BFcp <- BFcd / BFpd
-  pD <- (1 / BFpd) * 0.25 / (0.25 + BFsp * 0.25 + BFcp * 0.25 + (1 / BFpd) * 0.25)
+  pD <- 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pS <- BFsd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pP <- BFpd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pC <- BFcd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
@@ -320,18 +318,18 @@ plotGammas <- function (df) {
                                   "", 0.5, "", "1.0")) +
     theme_void() +
     theme(
-      text = element_text(family = "sans", size = 12),
-      axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1, size = 12),
+      text = element_text(family = "sans", size = 16),
+      axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1, size = 14),
       legend.position = "none",
-      legend.title = element_blank(),
-      axis.title.x = element_blank(),
+      # legend.title = element_blank(),
+      axis.title.x = element_text(margin = margin(0, 0, 5, 5)),
       axis.text = element_text(margin = margin(5, 5, 5, 5)),
       axis.text.y = element_text(hjust = 0.95),
       axis.title.y = element_text(margin = margin(5, 0, 5, 5)),
       axis.ticks = element_line(lineend = "butt",
                                 linewidth = 0.3),
       axis.ticks.length = unit(2.5, "pt"),
-      strip.text = element_text(margin = margin(5, 5, 5, 5), size = 14),
+      strip.text = element_text(margin = margin(5, 5, 5, 5), size = 16),
       panel.spacing = unit(7.5, units = "pt"),
       plot.margin = margin(0, 5, 0, 0),
       panel.grid.major.y = element_line(linewidth = 0.3, color = "grey85")
@@ -341,7 +339,7 @@ plotGammas <- function (df) {
     geom_segment(data = df_axis, y = -Inf, yend = -Inf,
                  aes(x = xmin, xend = xmax),
                  linewidth = 0.3, lineend = "square") +
-    labs(y = expression(gamma))
+    labs(y = expression(gamma), x = "Item")
   
   return(p)
 }
@@ -360,6 +358,9 @@ plotScatterPhiGamma <- function (df, delta_t = 18) {
   dfLineLong <- tidyr::pivot_longer(dfLine, cols = starts_with("y"),
                                     names_to = "model", values_to = "y")
   
+  dfLineLong$model <- factor(dfLineLong$model,
+                             levels = c("y_phi", "y_zero", "y_ct"))
+  
   p <- ggplot(df) +
     geom_line(data = dfLineLong, aes(x = x, y = y, linetype = model)) +
     geom_point(aes(x = phi, y = gamma, fill = category, shape = category),
@@ -368,10 +369,13 @@ plotScatterPhiGamma <- function (df, delta_t = 18) {
     scale_x_continuous(breaks = xBreaks, labels = xBreaks) +
     viridis::scale_fill_viridis(discrete = TRUE, labels = facetLabels) +
     scale_shape_manual(values = 21:25, labels = facetLabels) +
-    scale_linetype_manual(values = c("dotted", "dashed", "solid"),
-                          labels = expression(gamma == phi^delta_t,
-                                              gamma == phi,
-                                              gamma == 0)) +
+    scale_linetype_manual(values = c("dashed", "solid", "dotted"),
+                          labels = c(bquote(gamma == phi),
+                                     bquote(gamma == 0),
+                                     bquote(gamma == phi^.(delta_t)))) +
+    guides(shape = guide_legend(order = 1),
+           fill = guide_legend(order = 1),
+           linetype = guide_legend(order = 2)) +
     theme_void() +
     theme(
       text = element_text(family = "sans", size = 12),
@@ -407,9 +411,10 @@ plotPars <- function (df, delta_t = 18) {
     scale_y_continuous(breaks = seq(-1, 1, 0.25),
                        labels = c("-1.0", "", 0.5, "", "0.0",
                                   "", 0.5, "", "1.0")) +
-    scale_x_discrete(labels = c(expression(gamma), expression(phi),
-                                expression(gamma - phi),
-                                expression(gamma - phi ^ delta_t))) +
+    scale_x_discrete(labels = c(bquote(gamma),
+                                bquote(phi),
+                                bquote(gamma - phi),
+                                bquote(gamma - phi^.(delta_t)))) +
     viridis::scale_fill_viridis(discrete = T, labels = facetLabels) +
     scale_shape_manual(values = 21:25, labels = facetLabels) +
     facet_wrap(~ .id, ncol = 5) +
@@ -421,7 +426,7 @@ plotPars <- function (df, delta_t = 18) {
       axis.title.y = element_text(angle = 90),
       axis.text = element_text(margin = margin(5, 5, 5, 5)),
       axis.text.y = element_text(hjust = 0.95),
-      axis.text.x = element_text(angle = -15, vjust = 0.05),
+      axis.text.x = element_text(angle = 15, vjust = 0.5),
       axis.title = element_text(margin = margin(5, 5, 5, 5)),
       axis.ticks = element_line(lineend = "butt",
                                 linewidth = 0.3),
@@ -453,14 +458,14 @@ plotPriorPosterior <- function (df_posteriors, df_bayes_factors, delta_t = 18) {
                linewidth = 1) +
     geom_line(aes(x = x, y = density, linetype = line), linewidth = 1) +
     viridis::scale_colour_viridis(discrete = TRUE, direction = -1,
-                                  labels = expression(phi, phi^delta_t, 0)) +
+                                  labels = c(bquote(phi), bquote(phi^.(delta_t)), 0)) +
     scale_linetype_manual(values = c("solid", "dotted"),
                           labels = c("Posterior", "Prior")) +
     geom_area(aes(x = x, y = area), alpha = 0.2) +
     coord_cartesian(ylim = c(0, 4.5)) +
-    geom_text(aes(x = -1, y = 4, label = text_s), data = df_bayes_factors,
+    geom_text(aes(x = -1, y = 4, label = text_p), data = df_bayes_factors,
               parse = TRUE, hjust = 0, size = 0.36 * 12) +
-    geom_text(aes(x = -1, y = 3, label = text_p), data = df_bayes_factors,
+    geom_text(aes(x = -1, y = 3, label = text_s), data = df_bayes_factors,
               parse = TRUE, hjust = 0, size = 0.36 * 12) +
     geom_text(aes(x = -1, y = 2, label = text_c), data = df_bayes_factors,
               parse = TRUE, hjust = 0, size = 0.36 * 12) +
@@ -498,7 +503,8 @@ plotPMPs <- function (df) {
   # labels_fill <- c("p(Hp | y)", "p(Hs | y)", "p(Hc | y)", "p(Hd | y)")
   
   df$name <- factor(df$name,
-                    levels = c("pause", "stop", "continue", "different"))
+                    levels = c("pause", "stop", "continue", "different"),
+                    labels = c("pauses", "stops", "continues", "different"))
   
   df$category <- factor(df$category)
   levels(df$category) <- as.list(facetLabels)
