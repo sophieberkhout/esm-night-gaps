@@ -160,7 +160,7 @@ diagnostics <- function (reps, res, out, pars) {
   deviance <- sapply(1:reps, .deviance, res = res, true = true)
 
   bias <- apply(deviance, 1, mean)
-  absolute_bias <- apply(abs(deviance), 1, mean)
+
   relative_bias <- numeric(length(true))
   for (i in 1:length(true)) {
     if (true[i] != 0) {
@@ -171,8 +171,8 @@ diagnostics <- function (reps, res, out, pars) {
   }
 
   mse <- apply(deviance ^ 2, 1, mean)
-  mae <- absolute_bias / reps
-  
+  mae <- apply(abs(deviance), 1, mean)
+
   medians <- sapply(1:reps, .median, res = res)
   empirical_SE <- apply(medians, 1, sd)
 
@@ -188,11 +188,13 @@ diagnostics <- function (reps, res, out, pars) {
 
   log_spline <- lapply(1:reps, fitLogSpline, out)
   bfs <- lapply(1:reps, getBF, res, log_spline)
+  
   min_bf_3 <- sapply(1:reps, minBF, bfs, min = 3)
-  power_bf_3 <- apply(min_bf_3, 1, .proportion)
   min_bf_5 <- sapply(1:reps, minBF, bfs, min = 5)
-  power_bf_5 <- apply(min_bf_5, 1, .proportion)
   min_bf_10 <- sapply(1:reps, minBF, bfs, min = 10)
+  
+  power_bf_3 <- apply(min_bf_3, 1, .proportion)
+  power_bf_5 <- apply(min_bf_5, 1, .proportion)
   power_bf_10 <- apply(min_bf_10, 1, .proportion)
   
   best_model <- sapply(1:reps, calcPostModProbs, bfs)
@@ -201,8 +203,7 @@ diagnostics <- function (reps, res, out, pars) {
   return(
     data.frame(parameter = names(pars),
                true = true,
-               bias = bias,
-               absolute_bias = absolute_bias, relative_bias = relative_bias,
+               bias = bias, relative_bias = relative_bias,
                empirical_SE = empirical_SE, mse = mse, mae = mae,
                separate_intervals = separate_intervals,
                power_bf_3 = power_bf_3,
@@ -303,3 +304,222 @@ calcPostModProbs <- function (r, bfs) {
   # should probably change order
   out <- c(NA, NA, pref_paus, NA, NA, pref_stop, pref_cont)
 }
+
+# plots
+
+getDataFrameBoth <- function(df_0.3, df_0.5) {
+  # combine data sets
+  df_0.3$phi <- 0.3
+  df_0.5$phi <- 0.5
+  df_both <- rbind(df_0.3, df_0.5)
+  
+  # only get relevant sets
+  df_plot <- df_both[df_both$parameter %in% c("gamma", "diff", "diff_ct"), ]
+  
+  # make factors
+  df_plot$parameter <- factor(df_plot$parameter,
+                              levels = c("diff", "gamma", "diff_ct"))
+  df_plot$days <- factor(df_plot$days, levels = c(200, 100, 50, 25))
+  
+  return(df_plot)
+}
+
+plotParameterRecovery <- function(df) {
+  # make df long format
+  df_long <- tidyr::pivot_longer(df, cols = c("bias", "mae", "coverage"),
+                                 names_to = "diagnostic", values_to = "value")
+  
+  # make factors
+  df_long$days <- factor(df_long$days)
+  df_long$diagnostic <- factor(df_long$diagnostic,
+                               levels = c("bias", "mae", "coverage"),
+                               labels = c("Bias", "MAE", "Coverage"))
+  df_long$parameter <- factor(df_long$parameter,
+                              levels = c("gamma", "phi", "diff", 
+                                         "diff_ct", "mu", 
+                                         "sigma_2", "psi_2"),
+                              labels = expression(gamma, phi, gamma - phi,
+                                                  gamma - phi ^ 7, mu,
+                                                  sigma ^ 2, psi ^ 2))
+  df_long$diff <- factor(df_long$diff, labels = seq(0, 0.6, 0.1))
+  
+  # control separate y-axes
+  df_axis <- data.frame(diagnostic = unique(df_long$diagnostic),
+                        ymin = c(-0.04, 0, .9), ymax = c(0.04, 0.25, 1),
+                        hline = c(0, 0, 1))
+  
+  yBreaks <- function(x) {
+    if (max(x) < 0.2) {
+      seq(-0.04, 0.04, 0.02)
+    } else if (max(x) > 0.9) {
+      seq(.9, 1, 0.02)
+    } else {
+      seq(0, 0.25, 0.05)
+    }
+  }
+  
+  p <- ggplot(df_long) +
+    facet_grid(rows = vars(diagnostic), cols = vars(parameter),
+               scales = "free", labeller = label_parsed) +
+    geom_hline(data = df_axis, aes(yintercept = hline), linewidth = 0.3) +
+    geom_line(aes(x = days, y = value, group = diff, colour = diff),
+              linewidth = 0.75) +
+    scale_y_continuous(breaks = yBreaks) +
+    viridis::scale_colour_viridis(discrete = TRUE) +
+    labs(colour = expression(gamma)) +
+    theme_void() +
+    guides(colour = guide_legend(nrow = 1)) +
+    theme(
+      text = element_text(family = "sans", size = 12),
+      axis.title = element_blank(),
+      axis.text = element_text(margin = margin(5, 5, 5, 5)),
+      axis.text.y = element_text(hjust = 0.95),
+      axis.text.x = element_text(angle = 30, hjust = 1, vjust = 0.95, size = 11,
+                                 margin = margin(0, 0, -5, 0)),
+      axis.ticks = element_line(lineend = "butt",
+                                linewidth = 0.3),
+      axis.ticks.length = unit(2.5, "pt"),
+      strip.text = element_text(margin = margin(0, 5, 0, 5), size = 14),
+      strip.text.y = element_text(angle = 270),
+      legend.position = "bottom",
+      panel.spacing = unit(7.5, units = "pt")
+    ) +
+    geom_segment(data = df_axis,
+                 aes(x = -Inf, xend = -Inf, y = ymin, yend = ymax),
+                 linewidth = 0.3, lineend = "square") +
+    geom_segment(x = 1, xend = 4, y = -Inf, yend = -Inf,
+                 linewidth = 0.3, lineend = "square")
+  
+  return(p)
+}
+
+plotPower <- function(df, method = "BF_3") {
+  # labels for facets
+  labelPars <- as_labeller(
+    c(gamma = "BF[sd]", diff = "BF[pd]", diff_ct = "BF[cd]",
+      `0.3` = "phi == 0.3", `0.5` = "phi == 0.5"),
+    label_parsed
+  )
+  
+  p <- ggplot(df) +
+    facet_grid(cols = vars(parameter), rows = vars(phi),
+               scales = "free", labeller = labelPars) +
+    geom_hline(yintercept = 0.8, linewidth = 0.3) +
+    geom_line(aes(x = diff + phi, y = power_bf_3,
+                  colour = days, linetype = "BF > 3"), linewidth = 1) +
+    geom_point(aes(x = diff + phi, y = power_bf_3, colour = days),
+               size = 2, stroke = 1.5, fill = "white", shape = 21) +
+    labs(x = expression(gamma), y = "Power", colour = "Days") +
+    scale_x_continuous(breaks = seq(0, 0.6, 0.1)) +
+    scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+    viridis::scale_colour_viridis(discrete = TRUE,
+                                  labels = c(200, 100, 50, 25)) +
+    scale_linetype(guide = "none") +
+    theme_void() +
+    theme(
+      text = element_text(family = "sans", size = 12),
+      axis.title = element_text(margin = margin(5, 5, 5, 5)),
+      axis.title.y = element_text(angle = 90, size = 14),
+      axis.text = element_text(margin = margin(5, 5, 0, 5)),
+      axis.text.y = element_text(hjust = 0.95),
+      axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1, size = 12),
+      axis.ticks = element_line(lineend = "butt",
+                                linewidth = 0.3),
+      axis.ticks.length = unit(2.5, "pt"),
+      legend.text = element_text(size = 12),
+      legend.position = "bottom",
+      legend.margin = margin(0, 10, 0, 0),
+      strip.text = element_text(margin = margin(0, 5, 2, 5), size = 14),
+      strip.text.y = element_text(angle = 270),
+      strip.placement = "outside",
+      panel.spacing = unit(7.5, units = "pt"),
+      plot.margin = margin(5, 5, 0, 0)
+    ) +
+    geom_segment(x = -Inf, xend = -Inf, y = 0, yend = 1,
+                 linewidth = 0.3, lineend = "square") +
+    geom_segment(y = -Inf, yend = -Inf, x = 0, xend = 0.6,
+                 linewidth = 0.3, lineend = "square")
+  
+  # add dotted line for CI or BF > 10
+  if (method == "CI") {
+    p <- p +
+      geom_line(aes(x = diff + phi, y = power,
+                    colour = days, linetype = "CI"), linewidth = 1) +
+      geom_point(aes(x = diff + phi, y = power, colour = days),
+                 size = 2, stroke = 1.5, fill = "white", shape = 21) +
+      scale_linetype_manual("Method", breaks = c("CI", "BF > 3"),
+                            values = c("CI" = "dotted", "BF > 3" = "solid"))
+  }
+  if (method == "BF_10") {
+    p <- p +
+      geom_line(aes(x = diff + phi, y = power_bf_10,
+                    colour = days, linetype = "BF > 10"), linewidth = 1) +
+      geom_point(aes(x = diff + phi, y = power_bf_10, colour = days),
+                 size = 2, stroke = 1.5, fill = "white", shape = 21) +
+      scale_linetype_manual("Method", breaks = c("BF > 3", "BF > 10"),
+                            values = c("BF > 3" = "solid",
+                                       "BF > 10" = "dotted"))
+  }
+  
+  return(p)
+}
+
+plotProbabilities <- function(df) {
+  # get only relevant columns
+  df_bar <- df[, c("parameter", "pref_model", "days", "diff", "phi")]
+  
+  # compute gamma
+  df_bar$gamma <- round(df_bar$diff + df_bar$phi, 1)
+  
+  # model indicator
+  df_bar$model <- ifelse(df_bar$parameter == "gamma", "pauses",
+                         ifelse(df_bar$parameter == "diff", "stops",
+                                "continues"))
+  
+  # get posterior model probability for different model (1 - sum(3 other PMPs))
+  for (i in unique(df_bar$days)) {
+    for (j in unique(df_bar$gamma)) {
+      for (h in unique(df_bar$phi)) {
+        pref <- 1 - sum(subset(df_bar, days == i & gamma == j & phi == h,
+                               "pref_model"))
+        df_bar[nrow(df_bar) + 1, ] <- data.frame(NA, pref, i, j - h, h, j,
+                                                 model = "different")
+      }
+    }
+  }
+  
+  # labels to parse
+  df_bar$label_x <- paste("gamma ==", df_bar$gamma)
+  df_bar$label_y <- paste("phi ==", df_bar$phi)
+  
+  # make factors in correct order
+  df_bar$days <- factor(df_bar$days, levels = c("25", "50", "100", "200"))
+  df_bar$model <- factor(df_bar$model, levels = c("pauses", "stops",
+                                                  "continues", "different"))
+  
+  p <- ggplot(df_bar) +
+    facet_grid(cols = vars(label_x), rows = vars(label_y),
+               scales = "free_x", space = "free", labeller = label_parsed) +
+    geom_bar(aes(x = days, y = pref_model, fill = model), stat = "identity") +
+    viridis::scale_fill_viridis(name = "Method", discrete = TRUE) +
+    theme_void() +
+    theme(
+      text = element_text(family = "sans", size = 12),
+      axis.title = element_blank(),
+      axis.text = element_text(margin = margin(5, 5, 5, 5)),
+      axis.text.y = element_text(hjust = 0.95),
+      axis.text.x = element_text(angle = 45, hjust = 1.3, vjust = 2, size = 12,
+                                 margin = margin(10, 0, -10, 0)),
+      axis.ticks.y = element_line(lineend = "butt",
+                                  linewidth = 0.3),
+      axis.ticks.length = unit(2.5, "pt"),
+      strip.text = element_text(margin = margin(5, 5, 5, 5), size = 12),
+      strip.text.y = element_text(angle = 270),
+      legend.position = "bottom",
+      panel.spacing = unit(7.5, units = "pt")
+    ) +
+    labs(y = "Proportion selected models", x = "Number of days")
+  
+  return(p)
+}
+

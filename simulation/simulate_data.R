@@ -34,7 +34,7 @@ for (days_i in days) {
       parallel::parLapplyLB(cl = clus, 1:reps,
                             simulateData,
                             D = days_i, B = beeps, burnin = burnin, pars = pars,
-                            file = "simulation/data/phi0.3/")
+                            file = "simulation/data/phi_0.3/")
     )
     
     t_total <- c(t_total, t_fit["elapsed"])

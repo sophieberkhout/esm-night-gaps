@@ -17,11 +17,11 @@ load("simulation/simulation_settings_phi_0.3.RData")
 for (days_i in days) {
   for (diff_i in diff) {
     stan_dat <- parallel::parLapplyLB(clus, 1:reps, stanData,
-                                      file = "simulation/data/phi0.3/",
+                                      file = "simulation/data/phi_0.3/",
                                       D = days_i, B = beeps, diff = diff_i)
     
     # where to save results
-    modelout <- sprintf("simulation/stan/modelout/phi0.3_iter10000/fit_days_%s_diff_%s",
+    modelout <- sprintf("simulation/stan/modelout/phi_0.3/fit_days_%s_diff_%s",
                         days_i, diff_i)
 
     # fit model 

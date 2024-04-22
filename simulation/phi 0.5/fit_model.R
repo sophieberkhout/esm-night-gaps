@@ -3,7 +3,6 @@ source("simulation/utils.R")
 n_threads <- 25
 clus <- parallel::makeCluster(n_threads)
 evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
-# exp <- parallel::clusterExport(clus, "mod")
 
 # compile stan model
 mod <- rstan::stan_model("simulation/stan/ar_beep_night.stan")
@@ -17,11 +16,11 @@ load("simulation/phi 0.5/simulation_settings_phi_0.5.RData")
 for (days_i in days) {
   for (diff_i in diff) {
     stan_dat <- parallel::parLapplyLB(clus, 1:reps, stanData,
-                                      file = "simulation/data/phi0.5/",
+                                      file = "simulation/data/phi_0.5/",
                                       D = days_i, B = beeps, diff = diff_i)
     
     # where to save results
-    modelout <- sprintf("simulation/stan/modelout/phi0.5/fit_days_%s_diff_%s",
+    modelout <- sprintf("simulation/stan/modelout/phi_0.5/fit_days_%s_diff_%s",
                         days_i, diff_i)
 
     # fit model 
