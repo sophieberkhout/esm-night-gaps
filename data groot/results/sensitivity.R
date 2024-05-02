@@ -50,7 +50,14 @@ pars_interval$set <- factor(pars_interval$set, levels = set[c(1, 5, 6)],
 # levels(pars_interval$set) <- c("30", "60", "90")
 # pars_interval$parameter <- factor(pars_interval$parameter, levels = c("phi", "gamma"))
 pars_interval <- pars_interval[order(parameter), ]
-ggplot(pars_interval) +
+
+pars_interval_test <- subset(pars_interval, .id %in% c("agitated", "satisfied", "hungry", "indecisive", "like myself"))
+pars_interval_test$.id <- factor(pars_interval_test$.id, 
+                                 levels = c("agitated", "indecisive", 
+                                            "like myself", "hungry",
+                                            "satisfied"))
+
+p_pars <- ggplot(pars_interval_test) +
   geom_hline(yintercept = 0, linewidth = 0.3) +
   geom_line(aes(x = set, y = median, group = parameter),
             linewidth = 1, position = position_dodge(width = 0.5)) +
@@ -60,24 +67,26 @@ ggplot(pars_interval) +
   facet_wrap(~ .id, ncol = 5) +
   coord_cartesian(ylim = c(-0.25, 1)) +
   scale_y_continuous(breaks = seq(-0.25, 1, 0.25)) +
+  scale_x_discrete(expand = expansion(add = 0.4)) +
   labs(y = "Estimates", x = "Daytime interval length in minutes",
-       colour = "Parameter") +
+       fill = "Parameter", shape = "Parameter") +
   scale_shape_manual(values = c(22, 21), labels = c(expression(gamma), expression(phi))) +
   viridis::scale_fill_viridis(discrete = TRUE, labels = c(expression(gamma), expression(phi))) +
   theme_void() +
   theme(
     text = element_text(family = "sans", size = 16),
-    axis.title.y = element_text(angle = 90),
+    axis.title.y = element_text(angle = 90, margin = margin(0, -5, 0, 0)),
+    axis.title.x = element_blank(),
     axis.text = element_text(margin = margin(5, 5, 5, 5)),
     axis.text.y = element_text(hjust = 0.95),
-    axis.title = element_text(margin = margin(5, 5, 5, 5)),
+    # axis.title = element_text(margin = margin(5, 5, 5, 5)),
     axis.ticks = element_line(lineend = "butt", linewidth = 0.3),
     axis.ticks.length = unit(2.5, "pt"),
     strip.text = element_text(margin = margin(5, 5, 5, 5), size = 16),
-    panel.spacing = unit(7.5, units = "pt"),
-    plot.margin = margin(0, 5, 0, 0),
-    legend.position = c(.9, .07),
-    legend.title = element_blank(),
+    panel.spacing = unit(20, units = "pt"),
+    plot.margin = margin(5, 15, 5, 5),
+    legend.position = "bottom",
+    # legend.title = element_blank(),
     legend.text = element_text(size = 16),
     panel.grid.major.y = element_line(linewidth = 0.3, color = "grey85")
   ) +
@@ -88,18 +97,18 @@ ggplot(pars_interval) +
 
 ggsave("data groot/results/sensitivity_estimates.pdf", width = 12, height = 12)
 
-all_bfs$set <- factor(all_bfs$set, levels = set[c(2, 1, 3:6)])
-ggplot(all_bfs) +
-  geom_point(aes(x = set, y = value, colour = name)) +
-  facet_wrap(~ .id, ncol = 5, scales = "free") +
-  scale_y_continuous(trans = "log10")
+# all_bfs$set <- factor(all_bfs$set, levels = set[c(2, 1, 3:6)])
+# ggplot(all_bfs) +
+#   geom_point(aes(x = set, y = value, colour = name)) +
+#   facet_wrap(~ .id, ncol = 5, scales = "free") +
+#   scale_y_continuous(trans = "log10")
 
 all_pmps$name <- factor(all_pmps$name,
                         levels = c("pause", "stop", "continue", "different"))
 all_pmps$set <- factor(all_pmps$set, levels = set[c(2, 1, 3:6)])
-ggplot(all_pmps) +
-  geom_point(aes(x = set, y = value, colour = name)) +
-  facet_wrap(~ item, ncol = 5)
+# ggplot(all_pmps) +
+#   geom_point(aes(x = set, y = value, colour = name)) +
+#   facet_wrap(~ item, ncol = 5)
 
 pmps_interval <- subset(all_pmps, set %in% c("main", "interval hour",
                                              "interval hour and half"))
@@ -107,9 +116,16 @@ pmps_interval$set <- factor(pmps_interval$set, levels = set[c(1, 5, 6)],
                             labels = c("30", "60", "90"))
 pmps_interval$name <- factor(pmps_interval$name,
                              levels = c("pause", "stop",
-                                        "continue", "different"))
+                                        "continue", "different"),
+                             labels = c("pauses", "stops",
+                                        "continues", "different"))
 
-ggplot(pmps_interval) +
+pmps_interval_test <- subset(pmps_interval, item %in% c("agitated", "satisfied", "hungry", "indecisive", "like myself"))
+pmps_interval_test$item <- factor(pmps_interval_test$item, 
+                                  levels = c("agitated", "indecisive",
+                                             "like myself", "hungry",
+                                             "satisfied"))
+p_pmps <- ggplot(pmps_interval_test) +
   facet_wrap(~ item, ncol = 5) +
   geom_bar(aes(x = set, y = value, fill = name), stat = "identity") +
   viridis::scale_fill_viridis(discrete = TRUE, name = "Method") +
@@ -120,23 +136,27 @@ ggplot(pmps_interval) +
     text = element_text(family = "sans", size = 16),
     axis.title.y = element_text(angle = 90),
     axis.title.x = element_text(),
-    legend.position = c(.9, .065),
-    legend.direction = "vertical",
+    legend.position = "bottom",
+    # legend.direction = "vertical",
     legend.text = element_text(family = "sans", size = 16),
-    legend.box.margin = margin(-10, 0, 0, 0),
+    # legend.box.margin = margin(0, 0, 0, 0),
     # axis.text = element_text(margin = margin(5, 5, 5, 5)),
     axis.text.y = element_text(margin = margin(5, 5, 5, 5), hjust = 0.95),
     axis.text.x = element_text(margin = margin(0, 5, 5, 5)),
     axis.ticks.y = element_line(lineend = "butt",
                                 linewidth = 0.3),
     axis.ticks.length = unit(2.5, "pt"),
-    strip.text = element_text(margin = margin(5, 5, 5, 5), size = 16),
+    strip.text = element_blank(),
+    # strip.text = element_text(margin = margin(5, 5, 5, 5), size = 16),
     panel.spacing = unit(7.5, units = "pt"),
     plot.margin = margin(5, 5, 5, 5)
 )
 
 ggsave("data groot/results/sensitivity.pdf", width = 12, height = 12)
 
+library(ggpubr)
+p_both <- ggarrange(p_pars, p_pmps, ncol = 1)
+ggsave("data groot/results/sensitivity_example.pdf", width = 12, height = 6)
 
 pmps_prior <- subset(all_pmps, set %in% c("main", "prior wide",
                                           "prior narrow", "prior nonzero"))

@@ -452,13 +452,20 @@ plotPriorPosterior <- function (df_posteriors, df_bayes_factors, delta_t = 18) {
                                   cols = c("phi", "phi_ct", "zero"),
                                   values_to = "null")
   
+  # order pauses, stops, continues
+  df_vline$name <- factor(df_vline$name, levels = c("phi", "zero", "phi_ct"))
+  
   p <- ggplot(df_posteriors) +
     facet_wrap(~ .id, ncol = 5) +
     geom_vline(aes(xintercept = null, colour = name), data = df_vline,
                linewidth = 1) +
     geom_line(aes(x = x, y = density, linetype = line), linewidth = 1) +
-    viridis::scale_colour_viridis(discrete = TRUE, direction = -1,
-                                  labels = c(bquote(phi), bquote(phi^.(delta_t)), 0)) +
+    scale_colour_manual(values = viridis::viridis(3)[c(2, 1, 3)],
+                        labels = c(bquote(phi), 0,
+                                   bquote(phi^.(delta_t)))) +
+    # viridis::scale_colour_viridis(discrete = TRUE, direction = -1,
+    #                               labels = c(bquote(phi), 0, 
+    #                                          bquote(phi^.(delta_t)))) +
     scale_linetype_manual(values = c("solid", "dotted"),
                           labels = c("Posterior", "Prior")) +
     geom_area(aes(x = x, y = area), alpha = 0.2) +
