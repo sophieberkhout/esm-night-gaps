@@ -393,7 +393,7 @@ plotParameterRecovery <- function(df) {
   return(p)
 }
 
-plotPower <- function(df, method = "BF_3") {
+plotBayesFactors <- function(df, method = "BF_3") {
   # labels for facets
   labelPars <- as_labeller(
     c(gamma = "BF[sd]", diff = "BF[pd]", diff_ct = "BF[cd]",
@@ -404,12 +404,13 @@ plotPower <- function(df, method = "BF_3") {
   p <- ggplot(df) +
     facet_grid(cols = vars(parameter), rows = vars(phi),
                scales = "free", labeller = labelPars) +
-    geom_hline(yintercept = 0.8, linewidth = 0.3) +
+    geom_hline(yintercept = 0.5, linewidth = 0.3) +
     geom_line(aes(x = diff + phi, y = power_bf_3,
                   colour = days, linetype = "BF > 3"), linewidth = 1) +
     geom_point(aes(x = diff + phi, y = power_bf_3, colour = days),
                size = 2, stroke = 1.5, fill = "white", shape = 21) +
-    labs(x = expression(gamma), y = "Power", colour = "Days") +
+    labs(x = expression(gamma), y = bquote(Proportion~H[d]~selected),
+         colour = "Days") +
     scale_x_continuous(breaks = seq(0, 0.6, 0.1)) +
     scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
     viridis::scale_colour_viridis(discrete = TRUE,
