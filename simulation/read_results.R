@@ -7,7 +7,7 @@ evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
 # track duration
 t_total <- numeric()
 
-# get simulation settings (days, beeps, mu, phi, diff, resvar_i)
+# get simulation settings (days, beeps, mu, phi, diff, sigma_2)
 load("simulation/simulation_settings_phi_0.3.RData")
 
 df_diagnostics_0.3 <- data.frame(matrix(NA, nrow = 0, ncol = 15))

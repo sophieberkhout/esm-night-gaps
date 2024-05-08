@@ -14,11 +14,13 @@ days <- c(25, 50, 100, 200)
 beeps <- 10
 burnin <- 50
 
+# parameter values
 mu <- 4
 phi <- 0.5
 diff <- seq(-5, 1, 1) / 10
 sigma_2 <- 1
 
+# save simulation settings
 save(reps, days, beeps, mu, phi, diff, sigma_2,
      file = "simulation/phi_0.5/simulation_settings_phi_0.5.RData")
 

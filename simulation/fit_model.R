@@ -6,7 +6,7 @@ evq <- parallel::clusterEvalQ(clus, source("simulation/utils.R"))
 # exp <- parallel::clusterExport(clus, "mod")
 
 # compile stan model
-mod <- rstan::stan_model("simulation/stan/ar_beep_night.stan")
+mod <- rstan::stan_model("simulation/stan/different_model.stan")
 
 # track duration
 t_total <- numeric()
