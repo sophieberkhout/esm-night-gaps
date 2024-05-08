@@ -1,7 +1,7 @@
 .Rhistory
 simulation/stan/modelout/
 simulation/data/
-data groot/data/
+example/data/
 simulation/simulation_settings.RData
 out/
 
