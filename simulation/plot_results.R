@@ -35,7 +35,7 @@ ggsave("simulation/results/plots/model_selection_ci.pdf", p_ci,
 # plot proportion of model with most probability for all values of gamma
 # and per sample size
 p_pmps <- plotProbabilities(df_both)
-ggsave("simulation/results/model_selection_pmp.pdf", p_pmps,
+ggsave("simulation/results/plots/model_selection_pmp.pdf", p_pmps,
        height = 4, width = 8)
 
 # compute ranges of posterior model probabilities for
