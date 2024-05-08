@@ -2,7 +2,7 @@ source("example/functions_data.R")
 
 dat_raw <- read.csv("example/data/ESMdata.csv")
 
-# keep get only last phase of the study (post treatment)
+# keep only last two phases of the study (post medication reduction)
 dat_post <- dat_raw[dat_raw$phase %in% c(4, 5), ]
 
 # create datetime variable

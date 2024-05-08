@@ -13,7 +13,8 @@ items <- names(dat_c)[grepl("mood_|pat_|phy_|se_", names(dat_c))]
 
 plotScatter(dat_unc, dat_c, items = items[grepl("se_", items)], breaks = 1:7,
             names = prettyNames(grepl("se_", items)),
-            filename = "example/plots/scatterplot_se.pdf", width = 7, height = 8)
+            filename = "example/plots/scatterplot_se.pdf",
+            width = 7, height = 8)
 
 plotScatter(dat_unc, dat_c, items = items[grepl("pat_", items)], breaks = 1:7,
             names = prettyNames(grepl("pat_", items)),
