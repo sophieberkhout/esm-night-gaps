@@ -27,7 +27,7 @@ p_bfs_10 <- plotBayesFactors(df_both, method = "BF_10")
 ggsave("simulation/results/plots/model_selection_bf_10.pdf", p_bfs_10,
        width = 8, height = 4)
 
-## based on point of interest being outside of credible interval
+## based on credible interval not containing zero (for gamma, diff, and diff_ct)
 p_ci <- plotBayesFactors(df_both, method = "CI")
 ggsave("simulation/results/plots/model_selection_ci.pdf", p_ci,
        width = 8, height = 4)
