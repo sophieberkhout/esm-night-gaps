@@ -3,7 +3,7 @@ load("example/results/interval uncorrected/objects.Rdata")
 
 library(ggplot2)
 
-delta_t = 7
+delta_t <- 7
 
 p_gammas <- plotGammas(df_pars)
 ggsave("example/results/interval uncorrected/plots/estimated_gammas.pdf",

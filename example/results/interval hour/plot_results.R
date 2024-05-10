@@ -3,7 +3,7 @@ load("example/results/interval hour/objects.Rdata")
 
 library(ggplot2)
 
-delta_t = 9
+delta_t <- 9
 
 p_gammas <- plotGammas(df_pars)
 ggsave("example/results/interval hour/plots/estimated_gammas.pdf",
