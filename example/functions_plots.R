@@ -39,8 +39,7 @@ plotTimeSeries <- function(dat, items, names, y_breaks,
   orderItems <- order(names)
   dat_long$name <- factor(dat_long$name, levels = items[orderItems],
                           labels = names[orderItems])
-  # levels(dat_long$name) <- names
-  
+
   dat_long$date <- as.POSIXct(dat_long$date, tz = "UTC")
   dat_long$datetime <- as.POSIXct(dat_long$datetime, tz = "UTC")
   
@@ -143,8 +142,6 @@ plotTimeSeries <- function(dat, items, names, y_breaks,
 
 plotScatter <- function(dat_unc, dat_c, items, names, breaks,
                         filename, width, height) {
-  
-  # names <- gsub(" ", "\n", names)
   
   dat_plot <- dat_unc[, c("beepno", items)]
   

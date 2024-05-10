@@ -30,13 +30,13 @@ intervalLengths <- function (dat, corrected = F) {
     # create variable that indicates what row represents the first beeps of the day
     firstbeep <- 0
     for (i in 1:nrow(dat)) {
-      firstbeep[i] <- ifelse(min(which(dat$day == dat$day[i])) == i, 1, 0)
+      firstbeep[i] <- min(which(dat$day == dat$day[i])) == i
     }
     
     # create variable that indicates what row represents the last beeps of the day
     lastbeep <- 0
     for (i in 1:nrow(dat)) {
-      lastbeep[i] <- ifelse(max(which(dat$day == dat$day[i])) == i, 1, 0)
+      lastbeep[i] <- max(which(dat$day == dat$day[i])) == i
     }
     
     # get datetime for first and last beeps

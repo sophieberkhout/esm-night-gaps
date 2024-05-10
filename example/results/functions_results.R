@@ -65,20 +65,25 @@ getStanCode <- function (prior_gamma = "normal(0, sqrt(0.5))") {
 
 stanData <- function(r, dat, items, delta_t = 18) {
   out <- tryCatch({
+    
+    # check if row indicates first beep of a day
     dat$firstbeep <- FALSE
     for (i in 1:nrow(dat)) {
-      dat$firstbeep[i] <- ifelse(min(which(dat$day == dat$day[i])) == i,
-                                 TRUE, FALSE)
+      dat$firstbeep[i] <- min(which(dat$day == dat$day[i])) == i
     }
+    # get indices of all first beeps (except first) and all other beeps
     db1 <- which(dat$firstbeep)[-1]
     dbi <- which(!dat$firstbeep)
     
+    # get variable data and indices for missings
     y <- dat[, items[r]]
     ii_mis <- which(is.na(y))
     ii_obs <- which(!is.na(y))
     
+    # only keep observed values
     y_obs <- y[ii_obs]
     
+    # put everything in a list
     dat_stan <- list(
       N = length(y), D = length(db1) + 1, B = length(dbi),
       db1 = db1, dbi = dbi,
@@ -235,13 +240,13 @@ dfPars <- function (res) {
 }
 
 postModelProb <- function (BFpd, BFsd, BFcd) {
-  # pause, stop, continue, different
+  # pauses, stops, continues, different
   pD <- 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pS <- BFsd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pP <- BFpd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   pC <- BFcd * 0.25 / (BFpd * 0.25 + BFsd * 0.25 + BFcd * 0.25 + 0.25)
   
-  df <- data.frame(pause = pP, stop = pS, continue = pC, different = pD)
+  df <- data.frame(pauses = pP, stops = pS, continues = pC, different = pD)
   return(df)
 }
 
@@ -254,8 +259,8 @@ dfPMPs <- function (df) {
   df$item <- prettyNames()
   df$category <- itemCategory()
   
-  df_long <- tidyr::pivot_longer(df, cols = c("pause", "stop",
-                                              "continue", "different"))
+  df_long <- tidyr::pivot_longer(df, cols = c("pauses", "stops",
+                                              "continues", "different"))
   df_long$name <- factor(df_long$name)
   
   return(df_long)
@@ -321,7 +326,6 @@ plotGammas <- function (df) {
       text = element_text(family = "sans", size = 16),
       axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1, size = 14),
       legend.position = "none",
-      # legend.title = element_blank(),
       axis.title.x = element_text(margin = margin(0, 0, 5, 5)),
       axis.text = element_text(margin = margin(5, 5, 5, 5)),
       axis.text.y = element_text(hjust = 0.95),
@@ -463,9 +467,6 @@ plotPriorPosterior <- function (df_posteriors, df_bayes_factors, delta_t = 18) {
     scale_colour_manual(values = viridis::viridis(3)[c(2, 1, 3)],
                         labels = c(bquote(phi), 0,
                                    bquote(phi^.(delta_t)))) +
-    # viridis::scale_colour_viridis(discrete = TRUE, direction = -1,
-    #                               labels = c(bquote(phi), 0, 
-    #                                          bquote(phi^.(delta_t)))) +
     scale_linetype_manual(values = c("solid", "dotted"),
                           labels = c("Posterior", "Prior")) +
     geom_area(aes(x = x, y = area), alpha = 0.2) +
@@ -510,8 +511,7 @@ plotPMPs <- function (df) {
   # labels_fill <- c("p(Hp | y)", "p(Hs | y)", "p(Hc | y)", "p(Hd | y)")
   
   df$name <- factor(df$name,
-                    levels = c("pause", "stop", "continue", "different"),
-                    labels = c("pauses", "stops", "continues", "different"))
+                    levels = c("pauses", "stops", "continues", "different"))
   
   df$category <- factor(df$category)
   levels(df$category) <- as.list(facetLabels)
