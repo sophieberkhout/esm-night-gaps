@@ -1,5 +1,7 @@
 correctInterval <- function(dat, min_int,
                             as_first = "08:15:00", as_last = "21:45:00") {
+  # dat should be a data frame with a column called 'datetime'
+  # the other columns should represent the observations
   
   min_int <- min_int * 60 # minutes to seconds
   
@@ -66,9 +68,13 @@ correctInterval <- function(dat, min_int,
     # first block of day
     firstblock_d <- day & firstblock
     
-    # check if first block of the day has observations for arbitrary item
-    first_obs <- !is.na(dat[firstblock_d, "mood_relaxed"])
-    # if no observations in first block, use middle of block as first
+    # check what columns are observations so not datetime, day and difftime
+    # pick arbitrary first column
+    col_obs <- names(dat)[!names(dat) %in% c("datetime", "day", "difftime")][1]
+    # check if first block of the day has observations for arbitrary column
+    first_obs <- !is.na(dat[firstblock_d, col_obs])
+    # if no observations in first block, use closest to as_first as first
+    # if observations in first block, use earliest observation as first
     if (sum(first_obs) == 0) {
       closest_first <- .closestToTime(dat$datetime[day], as_first)
       which_first <- which(day)[closest_first]
@@ -79,14 +85,15 @@ correctInterval <- function(dat, min_int,
     # last block of day
     lastblock_d <- day & lastblock
     
-    # check if last block of the day has observations for arbitrary item
-    last_obs <- !is.na(dat[lastblock_d, "mood_relaxed"])
-    # if no observations in last block, use middle of last as last
+    # check if last block of the day has observations for arbitrary column
+    last_obs <- !is.na(dat[lastblock_d, col_obs])
+    # if no observations in last block, use closest to as_last as last
+    # if observations in last block, use latest observation as last
     if (sum(last_obs) == 0) {
       closest_last <- .closestToTime(dat$datetime[day], as_last)
       which_last <- which(day)[closest_last]
     } else {
-      which_last <- min(which(lastblock_d)[last_obs])
+      which_last <- max(which(lastblock_d)[last_obs])
     }
     
     # all beeps within the day

@@ -14,9 +14,9 @@ dat <- dat_post[, grepl("datetime|mood_|pat_|phy_|se_", names(dat_post))]
 
 # correct intervals
 dat_30 <- correctInterval(dat, min_int = 30,
-                       as_first = "08:15:00", as_last = "21:45:00")
+                          as_first = "08:15:00", as_last = "21:45:00")
 dat_60 <- correctInterval(dat, min_int = 60,
-                       as_first = "08:15:00", as_last = "21:45:00")
+                          as_first = "08:15:00", as_last = "21:45:00")
 dat_90 <- correctInterval(dat, min_int = 90,
                           as_first = "08:15:00", as_last = "21:45:00")
 
