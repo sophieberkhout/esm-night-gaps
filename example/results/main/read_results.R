@@ -18,6 +18,9 @@ pars <- c("mu", "phi", "gamma", "sigma_2", "psi_2", "diff_phi", "diff_phi_ct")
 res <- lapply(1:length(items), getResults, out = out, pars = pars)
 names(res) <- prettyNames()
 
+# make table for supplementary materials
+makeTable(res)
+
 # compute Savage-Dickey density ratio and posterior model probabilities
 logSpline <- lapply(1:length(items), fitLogSpline, out)
 posterior_density <- lapply(1:length(items), getDensity, logSpline)

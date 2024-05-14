@@ -130,6 +130,20 @@ getResults <- function (r, out, pars) {
   return(out)
 }
 
+makeTable <- function(res) {
+  df_long <- data.table::rbindlist(res, idcol = TRUE)
+  df_long$parameter <- factor(df_long$parameter,
+                              levels = c("mu", "phi", "sigma_2",
+                                         "gamma", "psi_2",
+                                         "diff_phi", "diff_phi_ct"))
+  df_median <- df_long[, 1:3]
+  df_wide <- tidyr::pivot_wider(df_median,
+                                names_from = parameter, values_from = median,
+                                names_sort = TRUE)
+  df_wide <- df_wide[order(df_wide$.id), ]
+  print(xtable::xtable(df_wide), include.rownames = FALSE)
+}
+
 fitLogSpline <- function (r, out) {
   out <- tryCatch({
     posterior_samples <- rstan::extract(out[[r]], "gamma")$gamma
