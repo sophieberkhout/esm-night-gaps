@@ -76,7 +76,7 @@ library(ggplot2)
 
 x_breaks <- pretty(dt_unc$dt)
 x_breaks <- 0:12
-ggplot(dt_unc) +
+p_unc <- ggplot(dt_unc) +
   geom_histogram(aes(x = dt, fill = Interval, color = Interval)) +
   labs(x = "Time interval in hours") +
   scale_x_continuous(breaks = x_breaks) +
@@ -100,7 +100,7 @@ ggplot(dt_unc) +
                linewidth = 0.3,
                lineend = "square") 
 
-ggsave("example/plots/histogram_intervals.pdf", height = 3, width = 5)
+ggsave("example/plots/histogram_intervals.pdf", p_unc, height = 3, width = 5)
 
 # plot histograms of both corrected and uncorrected data
 dat <- read.csv("example/data/data.csv")
@@ -116,7 +116,7 @@ dt_unc_night$data <- "True"
 df_night <- rbind(dt_cor_night, dt_unc_night)
 
 x_breaks <- 9:12
-ggplot(df_night) +
+p_both_night <- ggplot(df_night) +
   geom_histogram(aes(x = dt, fill = data, colour = data), bins = 12) +
   labs(x = "Nighttime interval in hours") +
   scale_x_continuous(breaks = x_breaks, limits = c(min(x_breaks),
@@ -141,9 +141,6 @@ ggplot(df_night) +
                linewidth = 0.3,
                lineend = "square") 
 
-ggsave("example/plots/histogram_intervals_corrected_night.pdf",
-       height = 3, width = 5)
-
 # combine corrected and uncorrected interval differences of day only
 dt_cor_day <- subset(dt_cor, Interval == "Daytime", select = dt)
 dt_unc_day <- subset(dt_unc, Interval == "Daytime", select = dt)
@@ -153,7 +150,7 @@ dt_unc_day$data <- "True"
 df_day <- rbind(dt_cor_day, dt_unc_day)
 
 x_breaks <- 0:3
-ggplot(df_day) +
+p_both_day <- ggplot(df_day) +
   geom_histogram(aes(x = dt, colour = data, fill = data), bins = 40) +
   labs(x = "Daytime interval in hours") +
   scale_x_continuous(breaks = x_breaks, limits = c(min(x_breaks), max(x_breaks))) +
@@ -178,5 +175,7 @@ ggplot(df_day) +
                linewidth = 0.3,
                lineend = "square")
 
-ggsave("example/plots/histogram_intervals_corrected_day.pdf",
-       height = 3, width = 5)
+library(ggpubr)
+p_both <- ggarrange(p_both_day, p_both_night)
+ggsave("example/plots/histogram_intervals_both.pdf", p_both,
+       height = 3, width = 10)
