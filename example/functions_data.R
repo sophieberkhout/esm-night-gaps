@@ -1,3 +1,8 @@
+# An explanation of the following code can be found in the supplementary
+# materials available at: https://osf.io/w5cgz.
+# The following code is based on code by Leertouwer (2024) available at the
+# Github Repository: https://github.com/ILeertouwer/RINTERVAL.
+
 correctInterval <- function(dat, min_int,
                             as_first = "08:15:00", as_last = "21:45:00") {
   # dat should be a data frame with a column called 'datetime'
